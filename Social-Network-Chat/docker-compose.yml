@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  backend:
+    image: 'olzhikdoc/social-network-chat'
+    container_name: java-backend
+    ports:
+      - "8891:8891"
+    depends_on:
+      - db
+    restart: always
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=qwerty
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+  db:
+    image: 'postgres'
+    container_name: postgres-server
+    restart: always
+    ports:
+      - "1111:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=qwerty
