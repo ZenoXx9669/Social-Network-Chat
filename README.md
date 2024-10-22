@@ -48,7 +48,7 @@ docker-compose up
 1. Клонируйте репозиторий:
 
    ```bash
-   git clone https://github.com/ZenoXx9669/TechShop.git
+   git clone https://github.com/ZenoXx9669/Social-Network-Chat.git
 2. Откройте проект в вашей среде разработки (например, IntelliJ IDEA).
 
 3. Настройте доступ к базе данных в файле application.properties или application.yml:
