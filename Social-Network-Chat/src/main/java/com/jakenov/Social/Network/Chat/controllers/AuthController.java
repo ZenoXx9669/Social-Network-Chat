@@ -52,7 +52,7 @@ public class AuthController {
 //            model.addAttribute("jwt",jwt);
 //            return "redirect:/chat"; // перенаправление на страницу чата
 //        } catch (Exception e) {
-//            redirectAttributes.addFlashAttribute("error", "Invalid email or password!");
+//            redirectAttributes.addFlashAtt  ribute("error", "Invalid email or password!");
 //            return "redirect:/login"; // если аутентификация не удалась, перенаправляем обратно на страницу входа
 //        }
 //    }
