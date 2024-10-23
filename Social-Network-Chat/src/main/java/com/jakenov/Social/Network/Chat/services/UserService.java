@@ -14,6 +14,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,20 +31,38 @@ public class UserService implements UserDetailsService {
 
     private User globalUser;
 
-    public void registerUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRePassword(null);
+    public String registerUser(String nickname, String fullName, String email, String password, String rePassword) {
+        User checkUser1 = userRepository.findByNickName(nickname).orElse(null);
+        User checkUser2 = userRepository.findByEmail(email).orElse(null);
+        String redirect = "register?nicknameExist";
+        if (checkUser1 == null){
+            redirect = "register?emailExist";
+            if (checkUser2 == null){
+                redirect = "register?passwordsNotMatch";
+                if (password.equals(rePassword)){
+                    User user = new User();
+                    user.setNickName(nickname);
+                    user.setFullName(fullName);
+                    user.setEmail(email);
+                    user.setPassword(passwordEncoder.encode(password));
+                    Permission permission = new Permission();
+                    permission.setId(1L);
+                    List<Permission> permissions = new ArrayList<>();
+                    permissions.add(permission);
+                    user.setPermissions(permissions);
+                    userRepository.save(user);
+                    redirect = "verify-code";
+                    CodeForConfirm confirm = new CodeForConfirm();
+                    String code = String.valueOf(confirm.getCode());
+                    user.setCode(code);
+                    globalUser = user;
+                    sendVerificationEmail(user.getEmail(), code);
+                }
+            }
+        }
 
-        Permission permission = new Permission();
-        permission.setId(1L);
+        return "redirect:" + redirect;
 
-        user.getPermissions().add(permission);
-
-        CodeForConfirm confirm = new CodeForConfirm();
-        String code = String.valueOf(confirm.getCode());
-        user.setCode(code);
-        globalUser = user;
-        sendVerificationEmail(user.getEmail(), code);
     }
 
     @Override
@@ -51,13 +74,19 @@ public class UserService implements UserDetailsService {
         return user.get();
     }
 
-    public void checkCode(short code) {
+    public String checkCode(short code, Model model) {
         User user = globalUser;
-        if (compareToCode(user.getCode(), code)) {
-            userRepository.save(user);
-        }else {
-            throw new IllegalArgumentException("Неверный код подтверждения.");
+        try {
+            if (compareToCode(user.getCode(), code)) {
+                userRepository.save(user);
+            }else {
+                throw new IllegalArgumentException("Неверный код подтверждения.");
+            }
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return "verify-code";
         }
+        return "redirect:/login";
     }
 
 

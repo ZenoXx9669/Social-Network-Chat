@@ -28,42 +28,17 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ChatController {
-
-    private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
-    private final UserRepository userRepository;
-    private final JwtTokenProvider tokenProvider;
 
     @GetMapping("/chat")
     public String showChat(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getPrincipal() instanceof String
-                && authentication.getPrincipal().equals("anonymousUser")) {
-            return "login";
-        }
-
-        String username = authentication.getName();
-        User user = userRepository.findByEmail(username).orElse(new User());
-        String token = tokenProvider.generateToken(user);
-        model.addAttribute("user", user);
-        model.addAttribute("token", token);
-        return "chat";
+        return chatMessageService.openChatPage(model);
     }
 
 
     @MessageMapping("/chat")
-    public void processMessage(@Payload ChatMessage chatMessage) {
-        ChatMessage savedMsg = chatMessageService.save(chatMessage);
-        messagingTemplate.convertAndSendToUser(
-                 chatMessage.getRecipient(), "/queue/messages",
-                new Notification(
-                        savedMsg.getId(),
-                        savedMsg.getSender(),
-                        savedMsg.getRecipient(),
-                        savedMsg.getContent()
-                )
-        );
-
+    public ChatMessage processMessage(@Payload ChatMessage chatMessage) {
+        return chatMessageService.save(chatMessage);
     }
 
     @GetMapping("/messages/{senderId}/{recipientId}")

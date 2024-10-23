@@ -32,6 +32,15 @@ public class User implements UserDetails {
     private String code;
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Permission> permissions = new ArrayList<>();
+
+    public User(String nickName, String fullName, String email, String password, String rePassword) {
+        this.nickName = nickName;
+        this.fullName = fullName;
+        this.email = email;
+        this.password = password;
+        this.rePassword = rePassword;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return permissions;
